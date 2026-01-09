@@ -1,0 +1,47 @@
+# Silkworm Tracking Configuration
+# Video Configuration
+video:
+  # Optional realtime settings for Raspberry Pi / low-power devices
+  camera_index: 1 # which webcam index to open for realtime
+  vid_stride: 2 # process every Nth frame (e.g., 2 or 3 to skip frames)
+  fps: 20
+
+# Model Configuration
+model:
+  # Use .onnx for faster inference on Raspberry Pi (recommended).
+  # You can switch back to "best.pt" if you prefer PyTorch.
+  path: "best.onnx"
+  # IMPORTANT: for exported formats like ONNX, Ultralytics may not infer the task automatically.
+  task: "pose"
+  # Optional performance hints
+  device: null # e.g., 0 for GPU0, 'cpu' to force CPU, null to auto
+  imgsz: 448 # inference image size (reduce to 512/416 on Pi if needed)
+
+#  Detection Thresholds
+thresholds:
+  detect_conf: 0.60
+  pose_conf: 0.75
+  iou_thresh: 0.65
+  overlap_frames_thresh: 5
+  point_segment_dist_thresh: 5.0
+
+# Freeze Detection
+freeze:
+  pixel_thresh: 2.5
+  freeze_frames_thresh: 100
+
+# Tracker Configuration
+tracker:
+  head_kp_index: 0
+  max_distance: 50.0 # Maximum distance to match objects between frames
+  max_disappeared: 50 # Max frames an object can be missing before removing
+
+# Drawing Configuration
+drawing:
+  freeze_color: [0, 165, 255] # Orange
+  overlap_color: [0, 0, 255] # Red
+  head_color: [0, 0, 255] # Red
+  body_color: [0, 255, 255] # Yellow
+  tail_color: [255, 0, 0] # Blue
+  line_color: [0, 255, 0] # Green
+  bbox_color: [255, 255, 0] # Cyan

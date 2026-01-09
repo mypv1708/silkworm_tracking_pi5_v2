@@ -5,6 +5,11 @@ video:
   camera_index: 1 # which webcam index to open for realtime
   vid_stride: 2 # process every Nth frame (e.g., 2 or 3 to skip frames)
   fps: 20
+  # Display resolution (camera capture resolution)
+  # Higher resolution = better visibility but may reduce FPS
+  # Common options: 640x480 (default), 800x600, 1280x720, 1920x1080
+  width: 800  # Display width
+  height: 600 # Display height
 
 # Model Configuration
 model:
@@ -45,3 +50,9 @@ drawing:
   tail_color: [255, 0, 0] # Blue
   line_color: [0, 255, 0] # Green
   bbox_color: [255, 255, 0] # Cyan
+
+# Heatmap Configuration
+heatmap:
+  grid_shape: [4, 6] # [rows, cols] - number of grid cells
+  opacity: 0.3 # Heatmap overlay opacity (0-1)
+  draw_grid: true # Draw grid lines

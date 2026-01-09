@@ -32,6 +32,13 @@ def parse_args():
     parser.add_argument("--no-display", action="store_true", help="Disable display")
     parser.add_argument("--benchmark", action="store_true", help="Show performance metrics")
     parser.add_argument("--list", action="store_true", help="List available cameras and exit")
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="pose",
+        choices=["pose", "heatmap"],
+        help="Detection mode: 'pose' (tracking with keypoints) or 'heatmap' (density visualization)",
+    )
     return parser.parse_args()
 
 

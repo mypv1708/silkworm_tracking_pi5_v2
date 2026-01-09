@@ -16,6 +16,8 @@ class Config:
         self.camera_index: int = config['video'].get('camera_index', 0)
         self.vid_stride: int = config['video'].get('vid_stride', 1)
         self.fps: int = config['video'].get('fps', 15)
+        self.camera_width: int = config['video'].get('width', 640)
+        self.camera_height: int = config['video'].get('height', 480)
         
         # Model configuration
         self.model_path: str = config['model']['path']
@@ -49,3 +51,9 @@ class Config:
         self.tail_color: Tuple[int, int, int] = tuple(config['drawing']['tail_color'])
         self.line_color: Tuple[int, int, int] = tuple(config['drawing']['line_color'])
         self.bbox_color: Tuple[int, int, int] = tuple(config['drawing']['bbox_color'])
+        
+        # Heatmap configuration (optional)
+        heatmap_cfg = config.get('heatmap', {})
+        self.heatmap_grid_shape: Tuple[int, int] = tuple(heatmap_cfg.get('grid_shape', [4, 6]))
+        self.heatmap_opacity: float = float(heatmap_cfg.get('opacity', 0.3))
+        self.heatmap_draw_grid: bool = heatmap_cfg.get('draw_grid', True)

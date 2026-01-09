@@ -19,7 +19,7 @@ def list_cameras(max_index: int = 5) -> List[int]:
     return available
 
 
-def setup_camera(camera_index: int, target_fps: int = 15):
+def setup_camera(camera_index: int, target_fps: int = 15, width: int = 640, height: int = 480):
     """Setup camera with optimized settings."""
     cap = cv2.VideoCapture(camera_index)
     
@@ -29,10 +29,14 @@ def setup_camera(camera_index: int, target_fps: int = 15):
         if not cap.isOpened():
             raise FileNotFoundError(f"Cannot open any camera (tried {camera_index} and 0)")
     
-    # Optimized camera settings
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    # Set camera resolution
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     cap.set(cv2.CAP_PROP_FPS, target_fps)
+    
+    # Verify actual resolution (camera may not support requested resolution)
+    actual_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    actual_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
     # Test camera read
     ret, _ = cap.read()
@@ -40,10 +44,13 @@ def setup_camera(camera_index: int, target_fps: int = 15):
         print("Camera cannot read frames, retrying...")
         cap.release()
         cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         cap.set(cv2.CAP_PROP_FPS, target_fps)
+        actual_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        actual_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
+    print(f"Camera resolution: {actual_width}x{actual_height} (requested: {width}x{height})")
     return cap
 
 

@@ -6,39 +6,55 @@ Tracks and manages performance metrics for silkworm detection
 import time
 import gc
 import numpy as np
+from collections import deque
 from typing import List
 
 
 class PerformanceMonitor:
     """Monitor and track performance metrics."""
     
-    def __init__(self, max_inference_samples: int = 1000):
+    def __init__(self, max_inference_samples: int = 1000, fps_window_size: int = 30):
         """
         Initialize performance monitor.
         
         Args:
             max_inference_samples: Maximum number of inference time samples to keep
+            fps_window_size: Number of recent frames to use for FPS calculation (rolling window)
         """
         self.max_inference_samples = max_inference_samples
+        self.fps_window_size = fps_window_size
         self.inference_times: List[float] = []
         self.frame_count = 0
         self.total_frames_read = 0  # Count all frames read from camera
         self.start_time = time.time()
         self.total_detections = 0
+        
+        # Rolling window for FPS calculation (more responsive)
+        # Use deque for O(1) append/popleft (faster than list.pop(0))
+        self.frame_timestamps: deque = deque(maxlen=fps_window_size)  # Timestamps of processed frames
+        self.read_timestamps: deque = deque(maxlen=fps_window_size)   # Timestamps of read frames
     
     def start_frame(self):
         """Mark the start of a new frame."""
         self.frame_count += 1
+        # Record timestamp for rolling FPS calculation
+        # deque automatically maintains maxlen, no need to pop manually
+        self.frame_timestamps.append(time.time())
     
     def record_frame_read(self):
         """Record that a frame was read from camera."""
         self.total_frames_read += 1
+        # Record timestamp for rolling FPS calculation
+        # deque automatically maintains maxlen, no need to pop manually
+        self.read_timestamps.append(time.time())
     
     def record_inference_time(self, inference_time: float):
         """Record inference time for this frame."""
         self.inference_times.append(inference_time)
         # Limit memory usage by keeping only recent samples
+        # Use deque for better performance (O(1) append vs O(n) list slicing)
         if len(self.inference_times) > self.max_inference_samples:
+            # More efficient: remove from front instead of creating new list
             self.inference_times = self.inference_times[-self.max_inference_samples:]
     
     def record_detections(self, detection_count: int):
@@ -54,14 +70,30 @@ class PerformanceMonitor:
         gc.collect()
     
     def get_current_fps(self) -> float:
-        """Get current FPS based on elapsed time."""
-        elapsed = time.time() - self.start_time
-        return self.total_frames_read / elapsed if elapsed > 0 else 0
+        """Get current FPS using rolling window (more responsive)."""
+        if len(self.read_timestamps) < 2:
+            # Fallback to average if not enough samples
+            elapsed = time.time() - self.start_time
+            return self.total_frames_read / elapsed if elapsed > 0 else 0
+        
+        # Calculate FPS based on recent frames (rolling window)
+        time_span = self.read_timestamps[-1] - self.read_timestamps[0]
+        if time_span > 0:
+            return (len(self.read_timestamps) - 1) / time_span
+        return 0
     
     def get_processing_fps(self) -> float:
-        """Get processing FPS (frames actually processed)."""
-        elapsed = time.time() - self.start_time
-        return self.frame_count / elapsed if elapsed > 0 else 0
+        """Get processing FPS using rolling window (more responsive)."""
+        if len(self.frame_timestamps) < 2:
+            # Fallback to average if not enough samples
+            elapsed = time.time() - self.start_time
+            return self.frame_count / elapsed if elapsed > 0 else 0
+        
+        # Calculate FPS based on recent frames (rolling window)
+        time_span = self.frame_timestamps[-1] - self.frame_timestamps[0]
+        if time_span > 0:
+            return (len(self.frame_timestamps) - 1) / time_span
+        return 0
     
     def get_average_inference_time(self) -> float:
         """Get average inference time in milliseconds."""

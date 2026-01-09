@@ -20,7 +20,7 @@ model:
   task: "pose"
   # Optional performance hints
   device: null # e.g., 0 for GPU0, 'cpu' to force CPU, null to auto
-  imgsz: 448 # inference image size (reduce to 512/416 on Pi if needed)
+  imgsz: 416 # inference image size (reduce to 512/416 on Pi if needed)
 
 #  Detection Thresholds
 thresholds:

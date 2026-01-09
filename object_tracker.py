@@ -162,16 +162,20 @@ class SilkwormTracker:
                 cost_matrix[obj_idx, det_idx] = cost
         
         # Greedy matching (no SciPy dependency; fast and good enough for small N)
+        # Use sets for O(1) lookup instead of O(n) list lookup
+        matched_object_set = set()
+        matched_detection_set = set()
+        
         for _ in range(min(len(object_ids), len(detections))):
             min_cost = np.inf
             best_obj_idx = -1
             best_det_idx = -1
 
             for obj_idx in range(len(object_ids)):
-                if obj_idx in matched_object_indices:
+                if obj_idx in matched_object_set:
                     continue
                 for det_idx in range(len(detections)):
-                    if det_idx in matched_detection_indices:
+                    if det_idx in matched_detection_set:
                         continue
                     cost = cost_matrix[obj_idx, det_idx]
                     if cost < min_cost:
@@ -184,6 +188,8 @@ class SilkwormTracker:
             if min_cost <= match_cost_thresh:
                 matched_object_indices.append(best_obj_idx)
                 matched_detection_indices.append(best_det_idx)
+                matched_object_set.add(best_obj_idx)
+                matched_detection_set.add(best_det_idx)
             else:
                 break
         
